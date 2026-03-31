@@ -1,0 +1,28 @@
+require('dotenv').config();
+const { test, expect } = require('@playwright/test');
+
+test.use({ storageState: { cookies: [], origins: [] } });
+
+test('ABZ-T4252: [TC-07-PROD] List Info - Deleting - New', async ({ page }) => {
+  // Preconditions:
+  // 1. User is logged into the Premium Account
+   // 2. There are at least two List
+   // 3. User on List Info page
+  
+
+  await page.goto('https://features.artbinder.com/users/sign_in');
+  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
+  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
+  await page.getByRole('button', { name: 'Log In' }).click();
+  await page.waitForTimeout(1000);
+
+  await page.locator('.x-nav-more').filter({ hasText: 'Inventory' }).click();
+  await page.getByRole('link', { name: 'Lists' }).click();
+  await page.waitForURL('**/lists');
+
+  await page.locator('.x-grid-card__title a').first().click();
+  await page.waitForTimeout(500);
+
+  await page.locator('text=Delete').first().click();
+  await page.waitForTimeout(1000);
+});
