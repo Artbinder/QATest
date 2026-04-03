@@ -12,15 +12,17 @@ test('ABZ-T4356: [TC11-PROD] Invoice Details page', async ({ page }) => {
 
   await login(page);
 
-  await page.locator('.x-nav-more').filter({ hasText: 'Transactions' }).click();
-  await page.locator('label[for="forms-toggler"]').click({ force: true });
-  await page.getByRole('link', { name: 'Invoices' }).click();
-  await page.waitForURL('**/invoices');
+  await page.goto('/invoices', { waitUntil: 'networkidle' });
+  await page.waitForTimeout(1000);
   await page.locator('a.x-row-card__title.x-row-card__title_straight').first().click();
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(2000);
 
-  await page.locator('.modal-dialog a:has-text("Cancel")').first().click();
-  await page.waitForTimeout(1000);
+  // Dismiss modal if it appears (only shows for invoices without objects)
+  const cancelBtn = page.locator('.modal-dialog a:has-text("Cancel")').first();
+  if (await cancelBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await cancelBtn.click();
+    await page.waitForTimeout(1000);
+  }
 
   await page.locator('a.modal-opener-link:has-text("Add Objects")').click();
   await page.waitForTimeout(1000);

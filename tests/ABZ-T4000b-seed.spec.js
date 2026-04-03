@@ -347,8 +347,15 @@ test.describe.serial('Seed: Create test dependencies', () => {
     await page.waitForTimeout(2000);
     await page.getByRole('radio', { name: 'Consignment' }).click();
     await page.waitForTimeout(500);
-    await page.locator('.modal').locator('text=Create').first().click();
+    // Click Next if present, then Create
+    const nextBtn = page.locator('.modal .actions a:has-text("Next")');
+    if (await nextBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await nextBtn.click();
+      await page.waitForTimeout(1000);
+    }
+    await page.locator('.modal .actions a:has-text("Create"), .modal a:has-text("Create")').first().click();
     await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
   });
 
   // --- Add first object to a list ---

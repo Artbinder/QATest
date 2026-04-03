@@ -12,7 +12,7 @@ test('ABZ-T4321: [TC-02-PROD] User can add objects to transaction with "Add Obje
   await page.locator('.x-nav-more').filter({ hasText: 'Transactions' }).click();
   await page.locator('.x-nav-more').getByRole('link', { name: 'Offers' }).click();
   await page.waitForURL('**/transactions/offers');
-  await page.locator('.x-action.x-action_plus').click();
+  await page.locator('a:has-text("Create New Offer"), a:has-text("Create new Offer")').first().click();
   await page.waitForTimeout(500);
   await page.locator('select#transaction-type-select-type').selectOption('Offer');
   await page.waitForTimeout(500);

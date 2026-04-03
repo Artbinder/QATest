@@ -16,6 +16,9 @@ test('ABZ-T4291: [TC-05-PROD] Shows', async ({ page }) => {
   // Step: Observe the List of Shows
 
   await goToArtists(page);
+  // Search for an artist that has associated shows
+  await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('Warren Neidich');
+  await page.waitForTimeout(1500);
   await page.locator('.x-grid-card .x-grid-card__title a').first().click();
   await page.waitForTimeout(1000);
 
