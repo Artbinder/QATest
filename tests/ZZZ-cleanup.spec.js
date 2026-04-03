@@ -136,12 +136,28 @@ test.describe.serial('Cleanup: Wipe all records', () => {
   test('Cleanup 12: Delete all Objects', async ({ page }) => {
     await login(page);
     await goToObjects(page);
-    await selectAllAndDelete(page);
+    // Loop until all objects are deleted (may need multiple passes for paginated results)
+    for (let i = 0; i < 5; i++) {
+      await selectAllAndDelete(page);
+      await page.waitForTimeout(2000);
+      await page.reload({ waitUntil: 'networkidle' });
+      await page.waitForTimeout(1000);
+      const remaining = page.locator('.x-grid-card');
+      if (!(await remaining.first().isVisible({ timeout: 3000 }).catch(() => false))) break;
+    }
   });
 
   test('Cleanup 13: Delete all Artists', async ({ page }) => {
     await login(page);
     await goToArtists(page);
-    await selectAllAndDelete(page);
+    // Loop until all artists are deleted
+    for (let i = 0; i < 5; i++) {
+      await selectAllAndDelete(page);
+      await page.waitForTimeout(2000);
+      await page.reload({ waitUntil: 'networkidle' });
+      await page.waitForTimeout(1000);
+      const remaining = page.locator('.x-grid-card');
+      if (!(await remaining.first().isVisible({ timeout: 3000 }).catch(() => false))) break;
+    }
   });
 });

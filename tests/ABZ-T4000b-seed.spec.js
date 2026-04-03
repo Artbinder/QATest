@@ -20,7 +20,7 @@ test.use({ storageState: { cookies: [], origins: [] } });
  *   Untitled (First the Dust...), Charles Gaines, etc.
  */
 
-test.describe.serial('Seed: Create test dependencies', () => {
+test.describe('Seed: Create test dependencies', () => {
   test.setTimeout(300000);
 
   test('Seed: Create shows with associated objects', async ({ page }) => {
@@ -33,16 +33,21 @@ test.describe.serial('Seed: Create test dependencies', () => {
     await page.getByPlaceholder('Title').fill('The Works');
     await page.getByRole('link', { name: 'Create' }).click();
     await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
 
     // Add objects to "The Works"
     await page.locator('a.modal-opener-link').filter({ hasText: 'Add Objects' }).click();
-    await page.waitForTimeout(1000);
-    await page.locator('.list-add-works .x-grid-card').first().click();
-    await page.locator('.list-add-works .x-grid-card').nth(1).click();
-    await page.getByRole('button', { name: 'Save', exact: true }).click();
     await page.waitForTimeout(2000);
+    const modal = page.locator('.modal.in, .modal[style*="display: block"]').first();
+    await modal.waitFor({ state: 'visible', timeout: 10000 });
+    await modal.locator('.x-grid-card img').first().click();
+    await page.waitForTimeout(500);
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await page.waitForTimeout(3000);
+
+    // Save the show page
     await page.getByRole('button', { name: 'Save' }).first().click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000);
 
     // Create "Van Gogh" show
     await goToShows(page);
@@ -51,15 +56,21 @@ test.describe.serial('Seed: Create test dependencies', () => {
     await page.getByPlaceholder('Title').fill('Van Gogh');
     await page.getByRole('link', { name: 'Create' }).click();
     await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
 
     // Add objects to "Van Gogh"
     await page.locator('a.modal-opener-link').filter({ hasText: 'Add Objects' }).click();
-    await page.waitForTimeout(1000);
-    await page.locator('.list-add-works .x-grid-card').first().click();
-    await page.getByRole('button', { name: 'Save', exact: true }).click();
     await page.waitForTimeout(2000);
+    const modal2 = page.locator('.modal.in, .modal[style*="display: block"]').first();
+    await modal2.waitFor({ state: 'visible', timeout: 10000 });
+    await modal2.locator('.x-grid-card img').first().click();
+    await page.waitForTimeout(500);
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await page.waitForTimeout(3000);
+
+    // Save the show page
     await page.getByRole('button', { name: 'Save' }).first().click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000);
   });
 
   test('Seed: Create lists with associated objects', async ({ page }) => {
@@ -220,40 +231,52 @@ test.describe.serial('Seed: Create test dependencies', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
 
-    // Go to Edition Sets tab
-    await page.getByRole('link', { name: 'Edition Sets' }).click();
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
+    // Check if already a master with Edition Sets tab
+    const editionSetsTab = page.locator('a:has-text("Edition Sets")').first();
+    const alreadyMaster = await editionSetsTab.isVisible({ timeout: 3000 }).catch(() => false);
 
-    // Check how many sets exist
-    const existingSets = await page.locator('.x-row-card').count();
-    if (existingSets >= 2) return; // Already have enough
-
-    // Click the "Create Edition Set" link in the left-hand menu
-    const addBtn = page.locator('text=Create Edition Set').first();
-    await addBtn.click();
-    await page.waitForTimeout(2000);
-
-    // Confirm if prompted
-    const yesBtn = page.getByText('Yes', { exact: true });
-    if (await yesBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await yesBtn.click();
-      await page.waitForTimeout(2000);
+    async function createEditionSet(title) {
+      const titleInput = page.getByPlaceholder('Add Edition Set Title');
+      await titleInput.waitFor({ timeout: 10000 });
+      await titleInput.fill(title);
+      await page.waitForTimeout(500);
+      await page.waitForSelector('.x-edition-type-definition', { state: 'visible' });
+      await page.locator('.x-edition-type-definition').first().locator('input[type="text"]').nth(0).fill('2');
+      await page.locator('.x-edition-type-definition').first().locator('input[placeholder="1-5, 9 or leave blank for none"]').fill('1-2');
+      await page.getByRole('button', { name: 'Continue' }).click();
+      await page.getByRole('button', { name: 'Create' }).waitFor();
+      await page.getByRole('button', { name: 'Create' }).click();
+      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(3000);
     }
 
-    // Fill edition set form
-    const titleInput = page.getByPlaceholder('Add Edition Set Title');
-    await titleInput.waitFor({ timeout: 10000 });
-    await titleInput.fill('Edition Set B');
-    await page.waitForTimeout(500);
-    await page.waitForSelector('.x-edition-type-definition', { state: 'visible' });
-    await page.locator('.x-edition-type-definition').first().locator('input[type="text"]').nth(0).fill('2');
-    await page.locator('.x-edition-type-definition').first().locator('input[placeholder="1-5, 9 or leave blank for none"]').fill('1-2');
-    await page.getByRole('button', { name: 'Continue' }).click();
-    await page.getByRole('button', { name: 'Create' }).waitFor();
-    await page.getByRole('button', { name: 'Create' }).click();
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(3000);
+    if (!alreadyMaster) {
+      // Fresh object — convert to master by clicking "Edition Set" button
+      await page.locator('text=Edition Set').click();
+      await page.waitForTimeout(1000);
+      await page.getByText('Yes', { exact: true }).click();
+      await page.waitForTimeout(2000);
+      await createEditionSet('Edition Set A');
+
+      // Now create second set via LHM
+      await page.getByRole('link', { name: 'Edition Sets' }).click();
+      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(1000);
+      await page.locator('text=Create Edition Set').first().click();
+      await page.waitForTimeout(2000);
+      await createEditionSet('Edition Set B');
+    } else {
+      // Already a master — check how many sets exist
+      await editionSetsTab.click();
+      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(1000);
+      const existingSets = await page.locator('.x-row-card').count();
+      if (existingSets >= 2) return;
+
+      await page.locator('text=Create Edition Set').first().click();
+      await page.waitForTimeout(2000);
+      await createEditionSet('Edition Set B');
+    }
   });
 
   // --- Edition Sets for "Georgica Association Wainscott, December 2013" ---
