@@ -1,14 +1,11 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4321: [TC-02-PROD] User can add objects to transaction with "Add Objects" option', async ({ page }) => {
   // Login
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
+  await login(page);
 
   // Navigate to Transactions (Offers) page
   await page.locator('.x-nav-more').filter({ hasText: 'Transactions' }).waitFor();

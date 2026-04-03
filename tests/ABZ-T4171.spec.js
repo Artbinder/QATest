@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login, goToArtists, waitForModal } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -14,20 +14,14 @@ test('ABZ-T4171: [TC-04-PROD] Exported Multi-Column DOC according to Template fr
 
   test.setTimeout(120000);
   
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForTimeout(2000);
+  await login(page);
 
   // Step: 1. Select an Object
   // 2. Click Create Report
   // 3. Observe Select Your Report Template dropdown
   // Expected Result: 1. Newly created Report Templates are displayed in Select Your Report Template dropdown
 
-  await page.locator('.x-nav-more').filter({ hasText: 'Inventory' }).click();
-  await page.locator('.x-nav-more').getByRole('link', { name: 'Artists' }).click();
-  await page.waitForTimeout(2000);
+  await goToArtists(page);
   
   // Click on artist name in blue within the artist card
   await page.locator('.x-grid-card__title_name a').first().click();
@@ -46,8 +40,7 @@ test('ABZ-T4171: [TC-04-PROD] Exported Multi-Column DOC according to Template fr
   await page.waitForTimeout(2000);
   
   // Wait for modal and select Multi-Column template
-  const modal = page.locator('.modal.in, .modal[style*="display: block"]').first();
-  await modal.waitFor({ state: 'visible' });
+  const modal = await waitForModal(page);
   
   // Select Multi-Column template from dropdown
   const templateSelect = modal.locator('select').first();

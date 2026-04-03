@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login, goToObjects } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -9,16 +9,9 @@ test('ABZ-T4340: [TC10-PROD] Edition Deleting', async ({ page }) => {
    // 2. User is on Edition Info page
   
 
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForTimeout(1000);
+  await login(page);
 
-  await page.locator('.x-nav-more').filter({ hasText: 'Inventory' }).click();
-  await page.getByRole('link', { name: 'Objects', exact: true }).click();
-  await page.waitForURL('**/objects');
-  await page.waitForTimeout(500);
+  await goToObjects(page);
   
   // Search for specific edition object
   await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('Georgica Association Wainscott, December 2013');

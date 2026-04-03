@@ -1,21 +1,14 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login, goToReportTemplates } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4173: Multi-column Template', async ({ page }) => {
   // Login
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForLoadState('networkidle');
-  await expect(page).not.toHaveURL(/sign_in/);
+  await login(page);
 
   // Navigate to Report Templates
-  await page.locator('.x-nav-more').filter({ hasText: 'Reports' }).click();
-  await page.getByRole('link', { name: 'Report Templates' }).click();
-  await page.locator('.create-link a').waitFor({ state: 'visible' });
+  await goToReportTemplates(page);
 
   // Create new template
   await page.locator('.create-link a').click();

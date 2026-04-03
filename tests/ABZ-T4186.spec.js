@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login, goToObjects, clickFirstGridCard } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -9,18 +9,10 @@ test('ABZ-T4186: [TC-09-PROD] Associated Shows', async ({ page }) => {
    // 2. User is on Object Info -> Associated Shows
    // 3. Object contains Associated Shows
   
+  await login(page);
 
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForTimeout(1000);
-
-  await page.locator('.x-nav-more').filter({ hasText: 'Inventory' }).click();
-  await page.getByRole('link', { name: 'Objects', exact: true }).click();
-  await page.waitForURL('**/objects');
-  await page.locator('.x-grid-card__title a').first().click();
-  await page.waitForTimeout(1000);
+  await goToObjects(page);
+  await clickFirstGridCard(page);
 
   await page.getByRole('link', { name: 'Associated Shows' }).click();
   await page.waitForTimeout(1000);

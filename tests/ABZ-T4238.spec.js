@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -10,12 +10,7 @@ test('ABZ-T4238: [TC05-PROD] Edition Sets page - Forms creation', async ({ page 
    // 3. Page contains two Sets and each set contains two Editions
    // 4. Editions in Sets don't have Prices
   
-
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForLoadState('networkidle');
+  await login(page);
 
   // Expected Result: 1. There is an ability to create Invoice
    // 2. Invoice created with 4 Editions

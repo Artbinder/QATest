@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -10,11 +10,7 @@ test('ABZ-T4356: [TC11-PROD] Invoice Details page', async ({ page }) => {
    // 3. User is on Invoice Details
   
 
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForTimeout(1000);
+  await login(page);
 
   await page.locator('.x-nav-more').filter({ hasText: 'Transactions' }).click();
   await page.locator('label[for="forms-toggler"]').click({ force: true });

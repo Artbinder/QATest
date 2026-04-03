@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login, goToShows } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -8,12 +8,7 @@ test('ABZ-T4204: [TC-03-PROD] Show creation', async ({ page }) => {
   // 1. User is logged into the Basic/Premium Account
   // 2. User is on Shows Landing Page
   
-
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForURL('https://features.artbinder.com/');
+  await login(page);
 
   // Step: Click on "Create New Show" button
   // Expected Result: 1. "Create New Show" modal window is displayed
@@ -22,9 +17,7 @@ test('ABZ-T4204: [TC-03-PROD] Show creation', async ({ page }) => {
   //       o Start Date
   //       o End Date
 
-  await page.locator('.x-nav-more').filter({ hasText: 'Inventory' }).click();
-  await page.getByRole('link', { name: 'Shows', exact: true }).first().click();
-  await page.waitForURL('**/shows');
+  await goToShows(page);
 
   await page.getByText('Create New Show').click();
   await page.waitForTimeout(500);

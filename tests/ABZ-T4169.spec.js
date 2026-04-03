@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login, navigateTo, waitForModal } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -16,15 +16,10 @@ test('ABZ-T4169: [TC-04-PROD] Objects Premium', async ({ page }) => {
   // 3. Artist contains Object(s) and Editions
   
   // Login
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForTimeout(1000);
+  await login(page);
 
   // Navigate to Artists page
-  await page.locator('.x-nav-more').filter({ hasText: 'Artists' }).click();
-  await page.locator('.x-nav-more').getByRole('link', { name: 'Artists' }).click();
+  await navigateTo(page, 'Artists', 'Artists');
   await page.waitForURL('**/artists');
   
   // Click on first artist name to view artist details
@@ -65,8 +60,7 @@ test('ABZ-T4169: [TC-04-PROD] Objects Premium', async ({ page }) => {
   await page.waitForTimeout(2000);
   
   // Wait for modal to appear and be visible
-  const modal = page.locator('.modal.in, .modal[style*="display: block"]').first();
-  await modal.waitFor({ state: 'visible', timeout: 10000 });
+  const modal = await waitForModal(page);
   
   // Click the label containing x-grid-card__label__text to select the checkbox
   const listItemLabel = modal.locator('label:has(.x-grid-card__label__text)').first();

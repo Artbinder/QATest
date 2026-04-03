@@ -1,20 +1,14 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login, goToLists } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4254: [TC-02-PROD] Lists Landing - LHM', async ({ page }) => {
   // Login
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForLoadState('networkidle');
+  await login(page);
 
   // Navigate to Lists Landing Page
-  await page.locator('.x-nav-more').filter({ hasText: 'Inventory' }).click();
-  await page.locator('.x-nav-more').getByRole('link', { name: 'Lists' }).click();
-  await page.waitForLoadState('networkidle');
+  await goToLists(page);
 
   // Select a List that not published
   const listCard = page.locator('.x-grid-card').first();

@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login, goToLists } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -8,22 +8,14 @@ test('ABZ-T4255: [TC-03-PROD] List creation', async ({ page }) => {
   // 1. User is logged into the Basic/Premium Account
    // 2. User is on Lists Landing Page
   
-
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForTimeout(1000);
+  await login(page);
 
   // Expected Result: 1. "Create New List" modal window is displayed
    // 2. There are fields:
           // o List Name
   // Step: Click on "Create New List" button
 
-  await page.locator('.x-nav-more').filter({ hasText: 'Inventory' }).click();
-  await page.waitForTimeout(500);
-  await page.getByRole('link', { name: 'Lists', exact: true }).click();
-  await page.waitForURL('**/lists');
+  await goToLists(page);
 
   await page.locator('a:has-text("Create New List"), button:has-text("Create New List")').first().click();
   await page.waitForTimeout(500);

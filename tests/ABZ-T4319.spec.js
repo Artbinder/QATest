@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -10,11 +10,7 @@ test('ABZ-T4319: [TC-07-PROD] Click on "Delete" in modal delete transaction remo
    // 2. Transaction contains at least one invoice generated for it.
   
 
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForTimeout(1000);
+  await login(page);
 
   await page.locator('text=Transactions').click();
   await page.getByRole('link', { name: 'Sales' }).click();

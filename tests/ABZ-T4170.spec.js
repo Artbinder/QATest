@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login, goToObjects, waitForModal } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -14,16 +14,10 @@ test('ABZ-T4170: [TC-05-PROD] Exported Multi-Column PDF according to Template fr
   // 5. User is on Objects Landing
   
   // Login
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForTimeout(2000);
+  await login(page);
 
   // Navigate to Objects Landing
-  await page.locator('.x-nav-more').filter({ hasText: 'Inventory' }).click();
-  await page.locator('.x-nav-more').getByRole('link', { name: 'Objects' }).click();
-  await page.waitForTimeout(2000);
+  await goToObjects(page);
 
   // Step: Try to Export Multi-Column PDF Report via object selection
   await page.locator('.x-grid-card label').first().click();
@@ -33,8 +27,7 @@ test('ABZ-T4170: [TC-05-PROD] Exported Multi-Column PDF according to Template fr
   await page.waitForTimeout(2000);
   
   // Wait for modal and select Multi-Column template
-  const modal = page.locator('.modal.in, .modal[style*="display: block"]').first();
-  await modal.waitFor({ state: 'visible' });
+  const modal = await waitForModal(page);
   
   // Select Multi-Column template from dropdown
   const templateSelect = modal.locator('select').first();

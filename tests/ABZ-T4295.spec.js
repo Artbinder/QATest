@@ -1,20 +1,14 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login, goToArtists } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4295: Artists Landing', async ({ page }) => {
   // Login
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForLoadState('networkidle');
-  await expect(page).not.toHaveURL(/sign_in/);
+  await login(page);
 
   // Navigate to Artists
-  await page.locator('.x-nav-more').filter({ hasText: 'Inventory' }).click();
-  await page.locator('.x-nav-more').getByRole('link', { name: 'Artists' }).click();
+  await goToArtists(page);
   await page.waitForTimeout(2000);
 
   // Switch to List View

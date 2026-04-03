@@ -1,20 +1,14 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login, goToObjects } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4330: Transaction creation', async ({ page }) => {
   // Login
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForLoadState('networkidle');
+  await login(page);
 
   // Navigate to Objects page
-  await page.locator('.x-nav-more').filter({ hasText: 'Inventory' }).click();
-  await page.locator('.x-nav-more').getByRole('link', { name: 'Objects' }).click();
-  await page.waitForLoadState('networkidle');
+  await goToObjects(page);
 
   // Select a few objects, editions, and masters and click "Create Transaction" in LHM
   await page.locator('.x-grid-card').first().click();

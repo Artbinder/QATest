@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login, goToShows, clickFirstGridCard } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -9,18 +9,9 @@ test('ABZ-T4261: [TC-06-PROD] LHM of Associated Objects in Premium account', asy
    // 2. User on Show Info page
    // 3. Objects and Editions added to the Show
   
-
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForTimeout(1000);
-
-  await page.locator('.x-nav-more').filter({ hasText: 'Inventory' }).click();
-  await page.getByRole('link', { name: 'Shows', exact: true }).click();
-  await page.waitForURL('**/shows');
-  await page.locator('.x-grid-card__title a').first().click();
-  await page.waitForTimeout(1000);
+  await login(page);
+  await goToShows(page);
+  await clickFirstGridCard(page);
 
   await page.evaluate(() => {
     document.querySelectorAll('.x-grid-card input[type="checkbox"]')[0].click();

@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -16,11 +16,7 @@ test('ABZ-T4296: [TC-09-PROD] Exported Single DOC according to Template from Edi
 
   test.setTimeout(120000);
   
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForTimeout(1000);
+  await login(page);
 
   await page.goto('/objects', { waitUntil: 'networkidle' });
   await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('Swinging Cardinal');

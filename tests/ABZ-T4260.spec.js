@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login, goToShows } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -9,12 +9,8 @@ test('ABZ-T4260: [TC-05-PROD] LHM of Associated Objects in Basic account', async
    // 2. User on Show Info page
    // 3. Objects and Editions added to the Show
   
-
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForTimeout(1000);
+  await login(page);
+  await goToShows(page);
 
   // Expected Result: 1. LHM appears
     // * Add to Show
@@ -30,10 +26,6 @@ test('ABZ-T4260: [TC-05-PROD] LHM of Associated Objects in Basic account', async
     // * Dissociate
   // Step: Select any Object or Edition
 
-  await page.locator('.x-nav-more').filter({ hasText: 'Inventory' }).click();
-  await page.waitForTimeout(1000);
-  await page.getByRole('link', { name: 'Shows', exact: true }).click();
-  await page.waitForURL('**/shows');
   await page.locator('.x-grid-card .x-grid-card__title a').first().click();
   await page.waitForTimeout(1000);
 

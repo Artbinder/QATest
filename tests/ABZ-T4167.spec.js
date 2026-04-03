@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login, goToShows, clickFirstGridCard } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -14,16 +14,10 @@ test('ABZ-T4167: [TC-07-PROD] Exported Label DOC according to Template from Show
 
   test.setTimeout(120000);
   
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForTimeout(1000);
+  await login(page);
 
-  await page.locator('.x-nav-more').filter({ hasText: 'Inventory' }).click();
-  await page.getByRole('link', { name: 'Shows', exact: true }).click();
-  await page.waitForURL('**/shows');
-  await page.locator('.x-grid-card__title a').first().click();
+  await goToShows(page);
+  await clickFirstGridCard(page);
   await page.waitForTimeout(1000);
 
   await page.locator('.x-grid-card').first().click();

@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -9,12 +9,7 @@ test('ABZ-T4214: [TC-05-PROD] LHM of Associated Objects in Basic account', { tim
    // 2. User on Show Info page
    // 3. Object and Edition added to the List
   
-
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForURL('https://features.artbinder.com/');
+  await login(page);
 
   // Expected Result: 1. LHM appears
     // * Add to Show

@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login, goToLists } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -8,12 +8,7 @@ test('ABZ-T4213: [TC-04-PROD] List info Page', async ({ page }) => {
   // 1. User is logged into the Basic/Premium Account
    // 2. User is on Lists Info page
   
-
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForURL('https://features.artbinder.com/');
+  await login(page);
 
   // Expected Result: 1. "Add to List" modal window is opened
    // 2. List of Object is displayed
@@ -22,9 +17,7 @@ test('ABZ-T4213: [TC-04-PROD] List info Page', async ({ page }) => {
 // (*the "Add Associated Objects" button is available if there are no Object
 // in the "Associated Objects" tab)
 
-  await page.locator('.x-nav-more').filter({ hasText: 'Inventory' }).click();
-  await page.getByRole('link', { name: 'Lists', exact: true }).first().click();
-  await page.waitForURL('**/lists');
+  await goToLists(page);
   await page.locator('.test-list-name').first().click();
   await page.waitForTimeout(2000);
 

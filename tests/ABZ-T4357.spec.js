@@ -1,5 +1,5 @@
-require('dotenv').config();
 const { test, expect } = require('@playwright/test');
+const { login } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -10,11 +10,7 @@ test('ABZ-T4357: [TC10-PROD] Loans Landing page', async ({ page }) => {
    // 3. User is on Loan Details
   
 
-  await page.goto('https://features.artbinder.com/users/sign_in');
-  await page.getByPlaceholder('Email').fill(process.env.TEST_EMAIL);
-  await page.getByPlaceholder('Password').fill(process.env.TEST_PASSWORD);
-  await page.getByRole('button', { name: 'Log In' }).click();
-  await page.waitForTimeout(1000);
+  await login(page);
 
   await page.locator('.x-nav-more').filter({ hasText: 'Transactions' }).click();
   await page.locator('label[for="forms-toggler"]').click({ force: true });
