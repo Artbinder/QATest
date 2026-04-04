@@ -1,32 +1,47 @@
 const { test, expect } = require('@playwright/test');
-const { login } = require('../utils/helpers');
+const { login, goToObjects, navigateTo } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4321: [TC-02-PROD] User can add objects to transaction with "Add Objects" option', async ({ page }) => {
-  // Login
+  test.setTimeout(90000);
   await login(page);
 
-  // Navigate to Transactions (Offers) page
-  await page.locator('.x-nav-more').filter({ hasText: 'Transactions' }).waitFor();
-  await page.locator('.x-nav-more').filter({ hasText: 'Transactions' }).click();
-  await page.locator('.x-nav-more').getByRole('link', { name: 'Offers' }).click();
+  // Navigate to Offers page
+  await navigateTo(page, 'Transactions', 'Offers');
   await page.waitForURL('**/transactions/offers');
-  await page.locator('a:has-text("Create New Offer"), a:has-text("Create new Offer")').first().click();
-  await page.waitForTimeout(500);
-  await page.locator('select#transaction-type-select-type').selectOption('Offer');
-  await page.waitForTimeout(500);
-  await page.getByRole('link', { name: 'Create' }).click();
-  await page.waitForTimeout(2000);
-  
-  // Now we should be on the offer transaction page with the object already added
-  // Try to add more objects using "+Add Objects" button
+  await page.waitForTimeout(1000);
+
+  // Check if any offers exist; if not, create one
+  const hasOffers = await page.locator('a[href*="/transactions/offers/"][href*="/edit"]').first().isVisible({ timeout: 3000 }).catch(() => false);
+
+  if (!hasOffers) {
+    // Create an offer from Objects page
+    await goToObjects(page);
+    await page.locator('.x-grid-card label').first().waitFor({ state: 'visible', timeout: 10000 });
+    await page.locator('.x-grid-card label').first().click();
+    await page.waitForTimeout(500);
+    await page.locator('text=Create Transaction').first().click();
+    await page.waitForTimeout(1000);
+    await page.locator('.modal select').first().selectOption('Offer');
+    await page.getByRole('link', { name: 'Create', exact: true }).click();
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
+  } else {
+    // Open the existing offer
+    await page.locator('a[href*="/transactions/offers/"][href*="/edit"]').first().click();
+    await page.waitForTimeout(2000);
+  }
+
+  // Add objects using "Add Objects" button
   await page.locator('text=Add Objects').click();
   await page.waitForTimeout(1500);
-  // Select objects by clicking the card (which triggers the checkbox)
-  await page.locator('.x-grid-card').first().click();
+
+  const modal = page.locator('.modal.in, .modal[style*="display: block"]').first();
+  await modal.waitFor({ state: 'visible', timeout: 10000 });
+  await modal.locator('.x-grid-card').first().waitFor({ state: 'visible', timeout: 10000 });
+  await modal.locator('.x-grid-card').first().click();
   await page.waitForTimeout(500);
-  // Click the Add button in the visible modal
-  await page.locator('.modal.in .actions a').filter({ hasText: 'Add' }).click();
+  await modal.locator('a').filter({ hasText: 'Add' }).click();
   await page.waitForTimeout(1000);
 });

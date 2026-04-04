@@ -23,8 +23,9 @@ test('ABZ-T4285: Object creation from Artist -> Objects page', async ({ page }) 
   await page.waitForTimeout(1000);
 
   // Fill in "Work Title" field and click "Save" button
-  await page.locator('#work_title').fill('Test Object Title');
-  await page.locator('.x-action.x-action_save').click();
+  await page.getByLabel('Work Title').fill('Test Object Title');
+  await page.locator('button.x-action_save, .x-action.x-action_save').first().click();
+  await page.waitForLoadState('networkidle');
   await page.waitForTimeout(1000);
 
   // Upload image file

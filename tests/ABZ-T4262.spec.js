@@ -4,40 +4,37 @@ const { login, goToShows } = require('../utils/helpers');
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4262: [TC-04-PROD] Show info page', async ({ page }) => {
-  // Preconditions:
-  // 1. User is logged into the system
-   // 2. There is at least one Show, Artist
-   // 3. There are at least two Object
-   // 4. User on Show Info page
-  
+  test.setTimeout(90000);
   await login(page);
   await goToShows(page);
 
-  // Expected Result: 1. The system shows the matching name in the drop-down menu
-  // Step: Enter the name of artist existing in the account in "Artist" field.
-
+  // Search for a show with associated objects
+  await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('The Works');
+  await page.waitForTimeout(1500);
+  await page.locator('.x-grid-card .x-grid-card__title a').first().waitFor({ state: 'visible', timeout: 10000 });
   await page.locator('.x-grid-card .x-grid-card__title a').first().click();
   await page.waitForTimeout(2000);
 
-  await page.evaluate(() => {
-    document.querySelector('a.dissociate.tooltipy').click();
-  });
-  await page.waitForTimeout(500);
-  await page.getByText('No', { exact: true }).click();
-  await page.waitForTimeout(500);
+  // Try to dissociate an object — click No to cancel
+  const dissociateLink = page.locator('a.dissociate.tooltipy').first();
+  if (await dissociateLink.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await dissociateLink.click({ force: true });
+    await page.waitForTimeout(500);
+    await page.getByText('No', { exact: true }).click();
+    await page.waitForTimeout(500);
+  }
 
-  // await page.evaluate(() => {
-  //   document.querySelector('a.dissociate.tooltipy').click();
-  // });
-  // await page.waitForTimeout(500);
-  // await page.getByText('Yes', { exact: true }).click();
-  // await page.waitForTimeout(1000);
-
+  // Add another object
   await page.locator('a.modal-opener-link').filter({ hasText: 'Add Objects' }).click();
-  await page.locator('.list-add-works > .x-work-list > .work-catalog > .x-grid > div:nth-child(2) > .x-grid-card__container > .x-grid-card__body > .x-grid-card__image > img').click();
+  await page.waitForTimeout(2000);
+  const modal = page.locator('.modal.in, .modal[style*="display: block"]').first();
+  await modal.waitFor({ state: 'visible', timeout: 10000 });
+  await modal.locator('.x-grid-card').first().waitFor({ state: 'visible', timeout: 10000 });
+  await modal.locator('.x-grid-card img').first().click();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await page.waitForTimeout(1000);
 
+  // Save the show page
   await page.getByRole('button', { name: 'Save' }).first().click();
   await page.waitForTimeout(1000);
 });

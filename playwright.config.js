@@ -7,7 +7,7 @@ module.exports = defineConfig({
   fullyParallel: false,
   use: {
     baseURL: 'https://features.artbinder.com',
-    headless: true,
+    headless: false,
     screenshot: 'on',
     video: 'on',
   },

@@ -1,23 +1,25 @@
 const { test, expect } = require('@playwright/test');
-const { login, goToShows, clickFirstGridCard } = require('../utils/helpers');
+const { login, goToShows } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4261: [TC-06-PROD] LHM of Associated Objects in Premium account', async ({ page }) => {
-  // Preconditions:
-  // 1. User is logged into the Premium Account
-   // 2. User on Show Info page
-   // 3. Objects and Editions added to the Show
-  
   await login(page);
   await goToShows(page);
-  await clickFirstGridCard(page);
 
-  await page.evaluate(() => {
-    document.querySelectorAll('.x-grid-card input[type="checkbox"]')[0].click();
-  });
+  // Search for a show with associated objects
+  await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('The Works');
+  await page.waitForTimeout(1500);
+  await page.locator('.x-grid-card__title a').first().waitFor({ state: 'visible', timeout: 10000 });
+  await page.locator('.x-grid-card__title a').first().click();
+  await page.waitForLoadState('networkidle');
+
+  // Select the first object checkbox
+  await page.locator('.x-grid-card label').first().waitFor({ state: 'visible', timeout: 10000 });
+  await page.locator('.x-grid-card label').first().click();
   await page.waitForTimeout(1000);
 
+  // Verify LHM options
   await expect(page.locator('.sidebar')).toContainText('Add to Show');
   await expect(page.locator('.sidebar')).toContainText('Create Form');
   await expect(page.locator('.sidebar')).toContainText('Create Transaction');

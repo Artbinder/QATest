@@ -113,7 +113,6 @@ async function globalSearch(page, query) {
   await searchInput.click();
   await searchInput.fill(query);
   await page.waitForTimeout(1500);
-  await searchInput.press('ArrowDown');
   await searchInput.press('Enter');
   await page.waitForLoadState('networkidle');
 }

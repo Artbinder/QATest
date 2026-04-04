@@ -4,20 +4,16 @@ const { login } = require('../utils/helpers');
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4358: [TC09-PROD] Consignments Landing page', async ({ page }) => {
-  // Preconditions:
-  // 1. User is logged in the Premium Account
-   // 2. User is on Consignments Landing page
-  
-
   await login(page);
 
-  // Navigate to Transactions menu and expand Forms submenu
-  await page.locator('.x-nav-more').filter({ hasText: 'Transactions' }).click();
-  await page.locator('label[for="forms-toggler"]').click({ force: true });
-  await page.getByRole('link', { name: 'Consignments' }).click();
-  await page.waitForURL('**/consignments');
+  // Navigate directly to consignments page
+  await page.goto('/consignments', { waitUntil: 'networkidle' });
+  await page.waitForTimeout(1000);
 
-  await page.locator('.x-row-card').first().click();
+  // Click on the first consignment row
+  const row = page.locator('.x-row-card').first();
+  await row.waitFor({ state: 'visible', timeout: 10000 });
+  await row.click();
   await page.waitForTimeout(500);
 
   await expect(page.getByText('Delete')).toBeVisible();

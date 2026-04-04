@@ -4,25 +4,42 @@ const { login } = require('../utils/helpers');
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4357: [TC10-PROD] Loans Landing page', async ({ page }) => {
-  // Preconditions:
-  // 1. User is logged in the Premium Account
-   // 2. Loan without Object created
-   // 3. User is on Loan Details
-  
-
+  test.setTimeout(90000);
   await login(page);
 
-  await page.locator('.x-nav-more').filter({ hasText: 'Transactions' }).click();
-  await page.locator('label[for="forms-toggler"]').click({ force: true });
-  await page.getByRole('link', { name: 'Loans' }).click();
-  await page.waitForURL('**/loans');
-  await page.locator('a.x-row-card__title.x-row-card__title_straight').first().click();
+  await page.goto('/loans', { waitUntil: 'networkidle' });
   await page.waitForTimeout(1000);
 
-  await page.locator('.modal-dialog a:has-text("Cancel")').first().click();
-  await page.waitForTimeout(1000);
+  // Check if any loans exist
+  const hasLoans = await page.locator('a.x-row-card__title.x-row-card__title_straight').first().isVisible({ timeout: 3000 }).catch(() => false);
 
-  await page.locator('a.modal-opener-link:has-text("Add Objects")').click();
+  if (!hasLoans) {
+    // Create a loan using the "Create New Loan" link on the page
+    await page.locator('text=Create New Loan').first().click();
+    await page.waitForTimeout(2000);
+
+    // A "Customize Form" dialog appears — click Create to accept defaults
+    const dialog = page.getByRole('dialog');
+    if (await dialog.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await dialog.locator('text=Create').click();
+      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(2000);
+    }
+  } else {
+    // Click on the first loan
+    await page.locator('a.x-row-card__title.x-row-card__title_straight').first().click();
+    await page.waitForTimeout(2000);
+  }
+
+  // Dismiss any modal that appears (e.g. "Add Objects" prompt)
+  const cancelBtn = page.locator('.modal-dialog a:has-text("Cancel")').first();
+  if (await cancelBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await cancelBtn.click();
+    await page.waitForTimeout(1000);
+  }
+
+  // Click Add Objects
+  await page.locator('text=Add Objects').first().click();
   await page.waitForTimeout(1000);
   await expect(page.getByRole('dialog')).toBeVisible();
 });

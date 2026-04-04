@@ -15,16 +15,30 @@ test.use({ storageState: { cookies: [], origins: [] } });
  *   - Forms: 1 Consignment, 1 Invoice, 1 Loan
  *
  * The Excel import (T4000) creates 60 objects + artists including:
- *   Swinging Cardinal, White Noise, Georgica Association...,
+ *   Swinging Cardinal, Orange, Georgica Association...,
  *   Art Before Philosophy After Art, Landscape Assorted Trees...,
  *   Untitled (First the Dust...), Charles Gaines, etc.
  */
 
 test.describe('Seed: Create test dependencies', () => {
-  test.setTimeout(300000);
 
   test('Seed: Create shows with associated objects', async ({ page }) => {
+    test.setTimeout(120000);
     await login(page);
+
+    // Helper to add an object to a show via the modal
+    async function addObjectToShow(pg) {
+      await pg.locator('a.modal-opener-link').filter({ hasText: 'Add Objects' }).click();
+      await pg.waitForTimeout(2000);
+      const m = pg.locator('.modal.in, .modal[style*="display: block"]').first();
+      await m.waitFor({ state: 'visible', timeout: 10000 });
+      // Wait for objects to load in the modal
+      await m.locator('.x-grid-card').first().waitFor({ state: 'visible', timeout: 15000 });
+      await m.locator('.x-grid-card img').first().click();
+      await pg.waitForTimeout(500);
+      await pg.getByRole('button', { name: 'Save', exact: true }).click();
+      await pg.waitForTimeout(3000);
+    }
 
     // Create "The Works" show
     await goToShows(page);
@@ -36,14 +50,7 @@ test.describe('Seed: Create test dependencies', () => {
     await page.waitForTimeout(1000);
 
     // Add objects to "The Works"
-    await page.locator('a.modal-opener-link').filter({ hasText: 'Add Objects' }).click();
-    await page.waitForTimeout(2000);
-    const modal = page.locator('.modal.in, .modal[style*="display: block"]').first();
-    await modal.waitFor({ state: 'visible', timeout: 10000 });
-    await modal.locator('.x-grid-card img').first().click();
-    await page.waitForTimeout(500);
-    await page.getByRole('button', { name: 'Save', exact: true }).click();
-    await page.waitForTimeout(3000);
+    await addObjectToShow(page);
 
     // Save the show page
     await page.getByRole('button', { name: 'Save' }).first().click();
@@ -59,14 +66,7 @@ test.describe('Seed: Create test dependencies', () => {
     await page.waitForTimeout(1000);
 
     // Add objects to "Van Gogh"
-    await page.locator('a.modal-opener-link').filter({ hasText: 'Add Objects' }).click();
-    await page.waitForTimeout(2000);
-    const modal2 = page.locator('.modal.in, .modal[style*="display: block"]').first();
-    await modal2.waitFor({ state: 'visible', timeout: 10000 });
-    await modal2.locator('.x-grid-card img').first().click();
-    await page.waitForTimeout(500);
-    await page.getByRole('button', { name: 'Save', exact: true }).click();
-    await page.waitForTimeout(3000);
+    await addObjectToShow(page);
 
     // Save the show page
     await page.getByRole('button', { name: 'Save' }).first().click();
@@ -74,6 +74,7 @@ test.describe('Seed: Create test dependencies', () => {
   });
 
   test('Seed: Create lists with associated objects', async ({ page }) => {
+    test.setTimeout(90000);
     await login(page);
     await goToLists(page);
 
@@ -95,6 +96,7 @@ test.describe('Seed: Create test dependencies', () => {
   });
 
   test('Seed: Create contacts', async ({ page }) => {
+    test.setTimeout(60000);
     await login(page);
     await goToContacts(page);
 
@@ -108,6 +110,7 @@ test.describe('Seed: Create test dependencies', () => {
   });
 
   test('Seed: Create contact groups', async ({ page }) => {
+    test.setTimeout(60000);
     await login(page);
     await goToContactGroups(page);
 
@@ -122,6 +125,7 @@ test.describe('Seed: Create test dependencies', () => {
   });
 
   test('Seed: Create report templates', async ({ page }) => {
+    test.setTimeout(60000);
     await login(page);
     await goToReportTemplates(page);
 
@@ -136,13 +140,14 @@ test.describe('Seed: Create test dependencies', () => {
   });
 
   test('Seed: Create offer transaction with objects', async ({ page }) => {
+    test.setTimeout(90000);
     await login(page);
     await goToObjects(page);
 
     // Select 3 objects and create an Offer transaction
-    await page.locator('.x-grid-card').first().click();
-    await page.locator('.x-grid-card').nth(1).click();
-    await page.locator('.x-grid-card').nth(2).click();
+    await page.locator('.x-grid-card label').first().click();
+    await page.locator('.x-grid-card label').nth(1).click();
+    await page.locator('.x-grid-card label').nth(2).click();
     await page.locator('text=Create Transaction').first().click();
     await page.locator('.modal select').first().selectOption('Offer');
     await page.getByRole('link', { name: 'Create', exact: true }).click();
@@ -150,13 +155,14 @@ test.describe('Seed: Create test dependencies', () => {
   });
 
   test('Seed: Create sale transaction with objects', async ({ page }) => {
+    test.setTimeout(90000);
     await login(page);
     await goToObjects(page);
 
     // Select 3 objects and create a Sale transaction
-    await page.locator('.x-grid-card').nth(3).click();
-    await page.locator('.x-grid-card').nth(4).click();
-    await page.locator('.x-grid-card').nth(5).click();
+    await page.locator('.x-grid-card label').nth(3).click();
+    await page.locator('.x-grid-card label').nth(4).click();
+    await page.locator('.x-grid-card label').nth(5).click();
     await page.locator('text=Create Transaction').first().click();
     await page.locator('.modal select').first().selectOption('Sale');
     await page.getByRole('link', { name: 'Create', exact: true }).click();
@@ -170,50 +176,75 @@ test.describe('Seed: Create test dependencies', () => {
   });
 
   test('Seed: Create consignment form', async ({ page }) => {
+    test.setTimeout(90000);
     await login(page);
     await goToObjects(page);
 
-    await page.locator('.x-grid-card').nth(6).click();
-    await page.locator('.x-grid-card').nth(7).click();
+    await page.locator('.x-grid-card label').nth(6).click();
+    await page.locator('.x-grid-card label').nth(7).click();
     await page.waitForTimeout(500);
     await page.locator('text=Create Form').first().click();
+    await page.waitForTimeout(1000);
     await page.getByRole('radio', { name: 'Consignment' }).click();
     await page.waitForTimeout(500);
-    await page.locator('.modal').locator('text=Create').first().click();
-    await page.waitForLoadState('networkidle');
+    const nextBtn = page.locator('.modal .actions a:has-text("Next")');
+    if (await nextBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await nextBtn.click();
+      await page.waitForTimeout(1000);
+    }
+    await page.locator('.modal .actions a:has-text("Create"), .modal a:has-text("Create")').first().click();
+    await page.waitForTimeout(3000);
+
+    // A "Customize Form" dialog may appear — click Create again to confirm
+    const customizeCreate = page.locator('.modal.in .actions a:has-text("Create"), .modal.in text=Create').last();
+    if (await customizeCreate.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await customizeCreate.click();
+      await page.waitForLoadState('networkidle');
+    }
+    await page.waitForTimeout(2000);
   });
 
   test('Seed: Create loan form', async ({ page }) => {
+    test.setTimeout(90000);
     await login(page);
     await goToObjects(page);
 
-    await page.locator('.x-grid-card').nth(8).click();
-    await page.locator('.x-grid-card').nth(9).click();
+    await page.locator('.x-grid-card label').nth(8).click();
+    await page.locator('.x-grid-card label').nth(9).click();
     await page.waitForTimeout(500);
     await page.locator('text=Create Form').first().click();
+    await page.waitForTimeout(1000);
     await page.getByRole('radio', { name: 'Loan' }).click();
     await page.waitForTimeout(500);
-    await page.locator('.modal').locator('text=Create').first().click();
-    await page.waitForLoadState('networkidle');
+    const nextBtn = page.locator('.modal .actions a:has-text("Next")');
+    if (await nextBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await nextBtn.click();
+      await page.waitForTimeout(1000);
+    }
+    await page.locator('.modal .actions a:has-text("Create"), .modal a:has-text("Create")').first().click();
+    await page.waitForTimeout(3000);
+
+    // A "Customize Form" dialog may appear — click Create again to confirm
+    const customizeCreate = page.locator('.modal.in .actions a:has-text("Create"), .modal.in text=Create').last();
+    if (await customizeCreate.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await customizeCreate.click();
+      await page.waitForLoadState('networkidle');
+    }
+    await page.waitForTimeout(2000);
   });
 
   test('Seed: Create invoice form', async ({ page }) => {
+    test.setTimeout(90000);
     await login(page);
     await goToObjects(page);
 
-    // Navigate to page 2 to get fresh unassociated objects
-    await page.locator('nav button:has-text("Next"), nav a:has-text("Next")').click();
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
-
-    await page.locator('.x-grid-card').first().click();
-    await page.locator('.x-grid-card').nth(1).click();
+    await page.locator('.x-grid-card label').nth(10).click();
+    await page.locator('.x-grid-card label').nth(11).click();
     await page.waitForTimeout(500);
     await page.locator('text=Create Form').first().click();
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
     await page.getByRole('radio', { name: 'Invoice' }).click();
     await page.waitForTimeout(500);
-    // Target the Next link inside the modal's .actions div, not the page pagination
     await page.locator('.modal .actions a:has-text("Next")').click();
     await page.waitForTimeout(1000);
     await page.getByText('Create', { exact: true }).click();
@@ -223,10 +254,22 @@ test.describe('Seed: Create test dependencies', () => {
   // --- Edition Sets for "Swinging Cardinal" ---
   // Needed by: T4238, T4296, T4343, T4344, T4345
   test('Seed: Create edition sets on Swinging Cardinal', async ({ page }) => {
+    test.setTimeout(120000);
     await login(page);
     await page.goto('/objects', { waitUntil: 'networkidle' });
-    await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('Swinging Cardinal');
-    await page.waitForTimeout(1500);
+
+    // Search with retry — the search index may need time after import
+    let found = false;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('Swinging Cardinal');
+      await page.waitForTimeout(2000);
+      found = await page.locator('.x-grid-card__title a').first().isVisible({ timeout: 5000 }).catch(() => false);
+      if (found) break;
+      // Clear search and try again
+      await page.getByRole('searchbox', { name: 'Search', exact: true }).clear();
+      await page.waitForTimeout(2000);
+    }
+
     await page.locator('.x-grid-card__title a').first().click();
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
@@ -282,6 +325,7 @@ test.describe('Seed: Create test dependencies', () => {
   // --- Edition Sets for "Georgica Association Wainscott, December 2013" ---
   // Needed by: T4342
   test('Seed: Create edition sets on Georgica Association', async ({ page }) => {
+    test.setTimeout(120000);
     await login(page);
     await page.goto('/objects', { waitUntil: 'networkidle' });
     await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('Georgica Association Wainscott, December 2013');
@@ -331,11 +375,12 @@ test.describe('Seed: Create test dependencies', () => {
   // --- Create forms using the FIRST object (for Associated Forms tests) ---
   // Needed by: T4274 (Associated Invoices), T4275 (Associated Consignments)
   test('Seed: Create forms for first object associations', async ({ page }) => {
+    test.setTimeout(120000);
     await login(page);
     await goToObjects(page);
 
     // Search for a specific unique object (no edition sets) to associate forms with
-    await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('White Noise');
+    await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('Orange');
     await page.waitForTimeout(1500);
 
     // Select the object checkbox
@@ -362,7 +407,7 @@ test.describe('Seed: Create test dependencies', () => {
 
     // Go back and create a consignment for the same object
     await goToObjects(page);
-    await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('White Noise');
+    await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('Orange');
     await page.waitForTimeout(1500);
     await page.locator('.x-grid-card label').first().click();
     await page.waitForTimeout(500);
@@ -384,6 +429,7 @@ test.describe('Seed: Create test dependencies', () => {
   // --- Add first object to a list ---
   // Needed by: T4277 (Associated Lists)
   test('Seed: Add first object to a list', async ({ page }) => {
+    test.setTimeout(90000);
     await login(page);
     await goToObjects(page);
 
@@ -398,8 +444,12 @@ test.describe('Seed: Create test dependencies', () => {
     // The modal shows available lists — select the first one
     const modal = page.locator('.modal.in, .modal[style*="display: block"]').first();
     await modal.waitFor({ state: 'visible', timeout: 10000 });
-    const listItemLabel = modal.locator('label:has(.x-grid-card__label__text)').first();
-    await listItemLabel.click({ force: true });
+    // Wait for list items to load, then click the first one using evaluate
+    await page.waitForTimeout(2000);
+    await modal.evaluate(el => {
+      const checkbox = el.querySelector('input[type="checkbox"], .css-checkbox');
+      if (checkbox) checkbox.click();
+    });
     await page.waitForTimeout(500);
     await modal.locator('a').filter({ hasText: 'Add' }).click();
     await page.waitForTimeout(1000);
