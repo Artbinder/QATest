@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { login, goToObjects } = require('../utils/helpers');
+const { login, goToObjects, searchWithRetry } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -7,24 +7,32 @@ test('ABZ-T4344: [TC05-PROD] Set Info - Managing', async ({ page }) => {
   await login(page);
   await goToObjects(page);
 
-  // Search for Swinging Cardinal
-  await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('Swinging Cardinal');
-  await page.waitForTimeout(1500);
-  await page.locator('.x-grid-card__title a').first().waitFor({ state: 'visible', timeout: 10000 });
+  // Search for Swinging Cardinal with retry
+  const found = await searchWithRetry(page, 'Swinging Cardinal');
+  expect(found, 'Could not find "Swinging Cardinal" in search results').toBeTruthy();
+
   await page.locator('.x-grid-card__title a').first().click();
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(1000);
 
   // Navigate to Edition Sets tab
   await page.getByRole('link', { name: 'Edition Sets' }).click();
+  await page.waitForLoadState('networkidle');
   await page.waitForTimeout(1000);
 
   // Click on the first edition set
-  await page.locator('.x-row-card__title, .x-row-card a').first().waitFor({ state: 'visible', timeout: 10000 });
-  await page.locator('.x-row-card__title, .x-row-card a').first().click();
+  await page.locator('.x-row-card a, .x-row-card__title').first().waitFor({ state: 'visible', timeout: 10000 });
+  await page.locator('.x-row-card a, .x-row-card__title').first().click();
+  await page.waitForLoadState('networkidle');
   await page.waitForTimeout(1000);
 
   // Click Manage Set
-  await page.locator('button:has-text("Manage Set"), a:has-text("Manage Set"), .x-action:has-text("Manage Set")').first().click();
+  const manageBtn = page.locator('text=Manage Set').first();
+  await manageBtn.waitFor({ state: 'visible', timeout: 10000 });
+  await manageBtn.click();
+  await page.waitForLoadState('networkidle');
   await page.waitForTimeout(1000);
+
+  // Verify we're on the Manage Set page
+  await expect(page.locator('text=Step 1')).toBeVisible({ timeout: 10000 });
 });

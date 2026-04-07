@@ -1,16 +1,15 @@
 const { test, expect } = require('@playwright/test');
-const { login, goToArtists } = require('../utils/helpers');
+const { login, goToArtists, searchWithRetry } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4291: [TC-05-PROD] Shows', async ({ page }) => {
-  test.setTimeout(90000);
   await login(page);
   await goToArtists(page);
 
   // Search for an artist that has associated shows
-  await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('Warren Neidich');
-  await page.waitForTimeout(1500);
+  const found = await searchWithRetry(page, 'Warren Neidich');
+  expect(found, 'Could not find "Warren Neidich" in search results').toBeTruthy();
   await page.locator('.x-grid-card .x-grid-card__title a, .x-grid-card__title_name a').first().waitFor({ state: 'visible', timeout: 10000 });
   await page.locator('.x-grid-card .x-grid-card__title a, .x-grid-card__title_name a').first().click();
   await page.waitForTimeout(1000);

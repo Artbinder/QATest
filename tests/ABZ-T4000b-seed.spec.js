@@ -74,7 +74,6 @@ test.describe('Seed: Create test dependencies', () => {
   });
 
   test('Seed: Create lists with associated objects', async ({ page }) => {
-    test.setTimeout(90000);
     await login(page);
     await goToLists(page);
 
@@ -140,7 +139,6 @@ test.describe('Seed: Create test dependencies', () => {
   });
 
   test('Seed: Create offer transaction with objects', async ({ page }) => {
-    test.setTimeout(90000);
     await login(page);
     await goToObjects(page);
 
@@ -155,7 +153,6 @@ test.describe('Seed: Create test dependencies', () => {
   });
 
   test('Seed: Create sale transaction with objects', async ({ page }) => {
-    test.setTimeout(90000);
     await login(page);
     await goToObjects(page);
 
@@ -176,7 +173,6 @@ test.describe('Seed: Create test dependencies', () => {
   });
 
   test('Seed: Create consignment form', async ({ page }) => {
-    test.setTimeout(90000);
     await login(page);
     await goToObjects(page);
 
@@ -205,7 +201,6 @@ test.describe('Seed: Create test dependencies', () => {
   });
 
   test('Seed: Create loan form', async ({ page }) => {
-    test.setTimeout(90000);
     await login(page);
     await goToObjects(page);
 
@@ -234,7 +229,6 @@ test.describe('Seed: Create test dependencies', () => {
   });
 
   test('Seed: Create invoice form', async ({ page }) => {
-    test.setTimeout(90000);
     await login(page);
     await goToObjects(page);
 
@@ -429,7 +423,6 @@ test.describe('Seed: Create test dependencies', () => {
   // --- Add first object to a list ---
   // Needed by: T4277 (Associated Lists)
   test('Seed: Add first object to a list', async ({ page }) => {
-    test.setTimeout(90000);
     await login(page);
     await goToObjects(page);
 

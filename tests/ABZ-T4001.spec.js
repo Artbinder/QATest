@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { login, goToObjects } = require('../utils/helpers');
+const { login, goToObjects, searchWithRetry } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -9,8 +9,8 @@ test('ABZ-T4182: Imported data verification', async ({ page }) => {
 
   // Navigate to Objects and search for 'Orange'
   await goToObjects(page);
-  await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('Orange');
-  await page.waitForTimeout(2000);
+  const found = await searchWithRetry(page, 'Orange');
+  expect(found, 'Could not find "Orange" in search results').toBeTruthy();
 
   // Verify the object appears in the grid
   const objectCard = page.locator('.x-grid-card__title a').first();

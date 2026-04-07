@@ -4,7 +4,6 @@ const { login } = require('../utils/helpers');
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4357: [TC10-PROD] Loans Landing page', async ({ page }) => {
-  test.setTimeout(90000);
   await login(page);
 
   await page.goto('/loans', { waitUntil: 'networkidle' });

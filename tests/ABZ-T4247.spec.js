@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { login, goToContacts } = require('../utils/helpers');
+const { login, goToContacts, searchWithRetry } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -16,8 +16,8 @@ test('ABZ-T4247: [TC-05-PROD] Contact Info - Associated Forms', async ({ page })
   // Step: Click on "Invoices" button in "Associated Forms" tab of LHM
 
   await goToContacts(page);
-  await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('Maxwell Adams');
-  await page.waitForTimeout(1000);
+  const found = await searchWithRetry(page, 'Maxwell Adams');
+  expect(found, 'Could not find "Maxwell Adams" in search results').toBeTruthy();
   await page.locator('.x-grid-card a[href*="/contacts/"]').first().click();
   await page.waitForTimeout(1000);
 

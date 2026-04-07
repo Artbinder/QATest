@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { login, goToObjects } = require('../utils/helpers');
+const { login, goToObjects, searchWithRetry } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -9,9 +9,9 @@ test('ABZ-T4168: [TC-06-PROD] Exported Label PDF according to Template from Obje
   await login(page);
   await goToObjects(page);
 
-  // Search for the object
-  await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('Untitled (First the Dust...)');
-  await page.waitForTimeout(1500);
+  // Search for the object with retry
+  const found = await searchWithRetry(page, 'Untitled (First the Dust...)');
+  expect(found, 'Could not find "Untitled (First the Dust...)" in search results').toBeTruthy();
 
   // Select the first object checkbox
   await page.locator('.x-grid-card label').first().waitFor({ state: 'visible', timeout: 10000 });

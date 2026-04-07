@@ -1,16 +1,15 @@
 const { test, expect } = require('@playwright/test');
-const { login, goToShows } = require('../utils/helpers');
+const { login, goToShows, searchWithRetry } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4262: [TC-04-PROD] Show info page', async ({ page }) => {
-  test.setTimeout(90000);
   await login(page);
   await goToShows(page);
 
   // Search for a show with associated objects
-  await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('The Works');
-  await page.waitForTimeout(1500);
+  const found = await searchWithRetry(page, 'The Works');
+  expect(found, 'Could not find "The Works" in search results').toBeTruthy();
   await page.locator('.x-grid-card .x-grid-card__title a').first().waitFor({ state: 'visible', timeout: 10000 });
   await page.locator('.x-grid-card .x-grid-card__title a').first().click();
   await page.waitForTimeout(2000);

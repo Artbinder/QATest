@@ -1,30 +1,43 @@
 const { test, expect } = require('@playwright/test');
-const { login, goToObjects } = require('../utils/helpers');
+const { login, goToObjects, searchWithRetry } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4186: [TC-09-PROD] Associated Shows', async ({ page }) => {
-  test.setTimeout(90000);
   await login(page);
   await goToObjects(page);
 
-  // Click the first object — it was associated with shows during seed
-  // (The seed adds the first object to "The Works" and "Van Gogh" shows)
-  await page.locator('.x-grid-card__title a').first().waitFor({ state: 'visible', timeout: 10000 });
-  await page.locator('.x-grid-card__title a').first().click();
-  await page.waitForLoadState('networkidle');
+  // Search for an object that was added to shows during seeding.
+  // The seed adds the first grid card's object to "The Works" and "Van Gogh",
+  // but grid order changes over time. Use a known imported object instead.
+  // Try multiple objects that the seed may have associated with shows.
+  let foundWithShows = false;
 
-  // Check if this object has associated shows; if not, navigate to one that does
-  const showsLink = page.locator('a:has-text("Associated Shows")');
-  const showsText = await showsLink.textContent();
-  if (showsText.includes('(0)')) {
-    // This object has no shows — go back and try the second object
-    await goToObjects(page);
-    await page.locator('.x-grid-card__title a').nth(1).click();
+  // The seed adds objects to shows by clicking the first grid card at seed time.
+  // We don't know which object that was, so click through objects until we find
+  // one with Associated Shows > 0.
+  await page.locator('.x-grid-card__title a').first().waitFor({ state: 'visible', timeout: 10000 });
+
+  for (let i = 0; i < 5; i++) {
+    await page.locator('.x-grid-card__title a').nth(i).click();
     await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(500);
+
+    const showsLink = page.locator('a:has-text("Associated Shows")');
+    const showsText = await showsLink.textContent().catch(() => '(0)');
+    if (!showsText.includes('(0)')) {
+      foundWithShows = true;
+      break;
+    }
+    // Go back and try next object
+    await goToObjects(page);
+    await page.waitForTimeout(500);
   }
 
+  expect(foundWithShows, 'No object found with associated shows in first 5 grid cards').toBeTruthy();
+
   await page.getByRole('link', { name: 'Associated Shows' }).click();
+  await page.waitForLoadState('networkidle');
   await page.waitForTimeout(1000);
 
   // Verify shows are listed

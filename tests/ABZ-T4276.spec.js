@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { login, goToObjects } = require('../utils/helpers');
+const { login, goToObjects, searchWithRetry } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -13,8 +13,8 @@ test('ABZ-T4276: [TC-11-PROD] Associated Reports', async ({ page }) => {
   await goToObjects(page);
   
   // Search for specific object with associated reports
-  await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('Art Before Philosophy After Art');
-  await page.waitForTimeout(1000);
+  const found = await searchWithRetry(page, 'Art Before Philosophy After Art');
+  expect(found, 'Could not find "Art Before Philosophy After Art" in search results').toBeTruthy();
   
   // Click on object title to go to object info page
   await page.locator('.x-grid-card .x-grid-card__title a').first().click();

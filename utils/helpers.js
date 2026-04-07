@@ -87,8 +87,29 @@ async function goToExcelImporter(page) {
 // ============================================================
 
 async function clickFirstGridCard(page) {
+  await page.locator('.x-grid-card__title a').first().waitFor({ state: 'visible', timeout: 15000 });
   await page.locator('.x-grid-card__title a').first().click();
   await page.waitForLoadState('networkidle');
+}
+
+/**
+ * Wait for grid cards to appear on the page.
+ * Useful after navigating to a detail page that shows associated objects.
+ */
+async function waitForGridCards(page, { timeout = 15000 } = {}) {
+  await page.locator('.x-grid-card').first().waitFor({ state: 'visible', timeout });
+}
+
+/**
+ * Click a modal button by text, waiting for the modal and button to be ready.
+ */
+async function clickModalButton(page, buttonText) {
+  const modal = page.locator('.modal.in, .modal[style*="display: block"]').first();
+  await modal.waitFor({ state: 'visible', timeout: 10000 });
+  const btn = modal.locator(`a, button`).filter({ hasText: buttonText }).first();
+  await btn.waitFor({ state: 'visible', timeout: 5000 });
+  await btn.click();
+  await page.waitForTimeout(500);
 }
 
 async function selectGridCards(page, count = 1) {
@@ -120,6 +141,24 @@ async function globalSearch(page, query) {
 async function searchInPage(page, query) {
   await page.getByRole('searchbox', { name: 'Search', exact: true }).fill(query);
   await page.waitForTimeout(1500);
+}
+
+/**
+ * Search for an object on the current grid page with retry logic.
+ * Clears and retries up to `maxAttempts` times if no results appear.
+ * Returns true if at least one grid card is visible after search.
+ */
+async function searchWithRetry(page, query, { maxAttempts = 3, waitMs = 2500 } = {}) {
+  const searchbox = page.getByRole('searchbox', { name: 'Search', exact: true });
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    await searchbox.fill(query);
+    await page.waitForTimeout(waitMs);
+    const found = await page.locator('.x-grid-card__title a').first().isVisible({ timeout: 5000 }).catch(() => false);
+    if (found) return true;
+    await searchbox.clear();
+    await page.waitForTimeout(1500);
+  }
+  return false;
 }
 
 // ============================================================
@@ -273,11 +312,14 @@ module.exports = {
   goToExcelImporter,
   // Grid & Selection
   clickFirstGridCard,
+  waitForGridCards,
+  clickModalButton,
   selectGridCards,
   selectAllItems,
   // Search
   globalSearch,
   searchInPage,
+  searchWithRetry,
   // Record Creation
   createArtist,
   createShow,

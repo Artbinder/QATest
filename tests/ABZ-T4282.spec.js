@@ -17,8 +17,11 @@ test('ABZ-T4282: [TC-04-PROD] Object Status -> Availability Status', async ({ pa
   // Step: Open a object with no information in the status lines
 
   await page.getByRole('link', { name: 'Object Status' }).click();
-  await page.waitForTimeout(500);
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
+  await page.getByRole('link', { name: 'Availability Status' }).waitFor({ state: 'visible', timeout: 10000 });
   await page.getByRole('link', { name: 'Availability Status' }).click();
+  await page.waitForLoadState('networkidle');
   await page.waitForTimeout(2000);
 
   await page.locator('select').first().selectOption({ index: 1 });

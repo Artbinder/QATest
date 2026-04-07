@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { login, goToShows, clickFirstGridCard } = require('../utils/helpers');
+const { login, goToShows, searchWithRetry } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -8,11 +8,15 @@ test('ABZ-T4167: [TC-07-PROD] Exported Label DOC according to Template from Show
 
   await login(page);
   await goToShows(page);
-  await clickFirstGridCard(page);
-  await page.waitForTimeout(1000);
 
-  // Select the first object in the show
-  await page.locator('.x-grid-card label').first().waitFor({ state: 'visible', timeout: 10000 });
+  // Search for "The Works" — a show with associated objects
+  const found = await searchWithRetry(page, 'The Works');
+  expect(found, 'Could not find "The Works" show').toBeTruthy();
+  await page.locator('.x-grid-card__title a').first().click();
+  await page.waitForLoadState('networkidle');
+
+  // Wait for objects grid to load in the show detail page
+  await page.locator('.x-grid-card label').first().waitFor({ state: 'visible', timeout: 15000 });
   await page.locator('.x-grid-card label').first().click();
   await page.waitForTimeout(500);
 

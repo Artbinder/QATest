@@ -4,7 +4,6 @@ const { login, navigateTo } = require('../utils/helpers');
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4329: [TC-02-PROD] User can add objects to transaction with "Add Objects" option', async ({ page }) => {
-  test.setTimeout(90000);
   await login(page);
 
   // Navigate to Sales transactions

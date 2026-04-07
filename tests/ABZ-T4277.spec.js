@@ -4,7 +4,6 @@ const { login, goToObjects } = require('../utils/helpers');
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4277: [TC-10-PROD] Associated Lists', async ({ page }) => {
-  test.setTimeout(90000);
   await login(page);
   await goToObjects(page);
 

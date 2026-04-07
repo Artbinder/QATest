@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { login } = require('../utils/helpers');
+const { login, searchWithRetry } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -9,8 +9,8 @@ test('ABZ-T4296: [TC-09-PROD] Exported Single DOC according to Template from Edi
   await login(page);
 
   await page.goto('/objects', { waitUntil: 'networkidle' });
-  await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('Swinging Cardinal');
-  await page.waitForTimeout(1500);
+  const found = await searchWithRetry(page, 'Swinging Cardinal');
+  expect(found, 'Could not find "Swinging Cardinal" in search results').toBeTruthy();
 
   // Click on the Swinging Cardinal object
   await page.locator('.x-grid-card__title a').first().waitFor({ state: 'visible', timeout: 10000 });

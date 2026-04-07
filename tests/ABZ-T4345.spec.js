@@ -1,16 +1,15 @@
 const { test, expect } = require('@playwright/test');
-const { login, goToObjects } = require('../utils/helpers');
+const { login, goToObjects, searchWithRetry } = require('../utils/helpers');
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test('ABZ-T4345: [TC04-PROD] Set Info', async ({ page }) => {
-  test.setTimeout(90000);
   await login(page);
   await goToObjects(page);
 
   // Search for Swinging Cardinal
-  await page.getByRole('searchbox', { name: 'Search', exact: true }).fill('Swinging Cardinal');
-  await page.waitForTimeout(1500);
+  const found = await searchWithRetry(page, 'Swinging Cardinal');
+  expect(found, 'Could not find "Swinging Cardinal" in search results').toBeTruthy();
   await page.locator('.x-grid-card__title a').first().waitFor({ state: 'visible', timeout: 10000 });
 
   // Get the object URL and navigate to its edition sets
